@@ -1,0 +1,49 @@
+#!/bin/sh
+
+show_usage_deshc() {
+	cat <<"EOF"
+deshc - decrypt SHC encrypted shell script
+  usage: deshc [-t second] encrypted1 encrypted2
+
+    Options:
+      -t          Specify the amount time on second for waiting execve call
+                  Default 0.03 second.
+EOF
+}
+
+if [[ "$1" == "-t" ]]; then
+	CUSTOM_DELAY_EXECVE=$2
+	shift
+	shift
+fi
+
+if [ -z "$@" ]; then
+	show_usage_deshc
+	exit 0
+fi
+
+for arg in $@; do
+	if [ -f $arg ]; then
+		filename="${arg%.*}"
+		echo "Decrypting $arg → $filename.dec.sh"
+		cp $arg $PATH
+		chmod +x $PATH/$arg
+		$arg >/dev/null 2>&1 &
+		child=$!
+		if [ -z $CUSTOM_DELAY_EXECVE ]; then
+			sleep 0.03
+		else
+			sleep $CUSTOM_DELAY_EXECVE
+		fi
+		kill -STOP $child
+		cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/; $d' >$filename.dec.sh
+		kill -TERM $child
+		rm -f $PATH/$arg
+		if [[ $(file $filename.dec.sh) != *script* ]]; then
+			echo "Failed to decrypt $arg"
+			rm $filename.dec.sh
+		fi
+	else
+		echo "file $arg not found."
+	fi
+done
