@@ -20,8 +20,8 @@ O = out
 
 all:
 	@echo "Available commands:"
-	@echo "make pack-deb-termux : Build deb package"
-	@echo "make pack-deb-linux : Clear generated files"
+	@echo "make pack-deb-termux : Build deb package for termux"
+	@echo "make pack-deb-linux : Build deb package for debian based distros"
 
 pack-deb-termux:
 	@mkdir -v $(O)

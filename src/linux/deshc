@@ -1,15 +1,41 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
 show_usage_deshc() {
 	cat <<"EOF"
-deshc - decrypt SHC encrypted shell script
-  usage: deshc [-t second] encrypted1 encrypted2
+deshc - decrypt SHC and SSC encrypted shell script
+  usage: deshc [-shc | -ssc] [OPTIONS] encrypted1 encrypted2
 
     Options:
-      -t          Specify the amount time on second for waiting execve call
-                  Default 0.03 second.
+      -p          Copy binary to $PATH before decrypting it,
+                  Solution for certain devices that chmod
+                  doesn't working properly like OnePlus/Realme/Oppo.
+      -t          Specify the amount time on second for waiting
+                  execve call. default 0.03 second for shc
+                  and 0.01 for ssc.
+
+    Examples:
+      deshc -shc encrypted1 encrypted2
+      deshc -ssc -t 0.009 encrypted1 encrypted2
+      deshc -shc -p encrypted1 encrypted2
+      deshc -ssc -p -t 0.01 encrypted1 encrypted2
 EOF
 }
+
+case $1 in
+-shc) ENCRYPTION_TYPE="SHC" ;;
+-ssc) ENCRYPTION_TYPE="SSC" ;;
+*)
+	show_usage_deshc
+	echo -e "\n\nerror: the following arguments are required: -shc/-ssc"
+	exit 1
+	;;
+esac
+shift
+
+if [[ "$1" == "-p" ]]; then
+	COPY_TO_PATH="1"
+	shift
+fi
 
 if [[ "$1" == "-t" ]]; then
 	CUSTOM_DELAY_EXECVE=$2
@@ -19,31 +45,74 @@ fi
 
 if [ -z "$@" ]; then
 	show_usage_deshc
+	echo -e "\n\nnotice: no target binary to decrypt"
 	exit 0
 fi
 
-for arg in $@; do
-	if [ -f $arg ]; then
-		filename="${arg%.*}"
-		echo "Decrypting $arg → $filename.dec.sh"
-		cp $arg $PATH
-		chmod +x $PATH/$arg
-		$arg >/dev/null 2>&1 &
-		child=$!
-		if [ -z $CUSTOM_DELAY_EXECVE ]; then
-			sleep 0.03
+if [[ $ENCRYPTION_TYPE == "SHC" ]]; then
+	for arg in $@; do
+		if [ -f $arg ]; then
+			filename="${arg%.*}"
+			echo "Decrypting $arg → $filename.dec.sh"
+
+			if [ $COPY_TO_PATH -eq 1 ]; then
+				cp $arg $PATH
+				chmod +x $PATH/$arg
+			else
+				chmod +x ./$arg
+			fi
+
+			$arg >/dev/null 2>&1 &
+			child=$!
+			if [ -z $CUSTOM_DELAY_EXECVE ]; then
+				sleep 0.03
+			else
+				sleep $CUSTOM_DELAY_EXECVE
+			fi
+			kill -STOP $child
+			cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/; $d' >$filename.dec.sh
+			kill -TERM $child
+
+			if [ $COPY_TO_PATH -eq 1 ]; then
+				rm -f $PATH/$arg
+			fi
+			if [[ $(file $filename.dec.sh) != *script* ]]; then
+				echo "Failed to decrypt $arg"
+				rm $filename.dec.sh
+			fi
 		else
-			sleep $CUSTOM_DELAY_EXECVE
+			echo "file $arg not found."
 		fi
-		kill -STOP $child
-		cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/; $d' >$filename.dec.sh
-		kill -TERM $child
-		rm -f $PATH/$arg
-		if [[ $(file $filename.dec.sh) != *script* ]]; then
-			echo "Failed to decrypt $arg"
-			rm $filename.dec.sh
+	done
+elif [[ $ENCRYPTION_TYPE == "SSC" ]]; then
+	for arg in $@; do
+		if [ -f $arg ]; then
+			filename="${arg%.*}"
+			echo "Decrypting $arg → $filename.dec.sh"
+
+			if [ $COPY_TO_PATH -eq 1 ]; then
+				cp $arg $PATH
+				chmod +x $PATH/$arg
+			else
+				chmod +x ./$arg
+			fi
+
+			$arg >/dev/null 2>&1 &
+			child=$!
+			if [ -z $CUSTOM_DELAY_EXECVE ]; then
+				sleep 0.01
+			else
+				sleep $CUSTOM_DELAY_EXECVE
+			fi
+			kill -STOP $child
+			cat /proc/$child/fd/3 >$filename.dec.sh
+			kill -TERM $child
+
+			if [ $COPY_TO_PATH -eq 1 ]; then
+				rm -f $PATH/$arg
+			fi
+		else
+			echo "file $arg not found."
 		fi
-	else
-		echo "file $arg not found."
-	fi
-done
+	done
+fi
