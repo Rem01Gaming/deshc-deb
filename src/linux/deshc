@@ -115,4 +115,5 @@ elif [[ $ENCRYPTION_TYPE == "SSC" ]]; then
 			echo "file $arg not found."
 		fi
 	done
+	echo -e "\nDecrypting SSC script is a bit trickier than SHC, sometimes the output is kind of truncated. make sure to check the output after decrypting it."
 fi
