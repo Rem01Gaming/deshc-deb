@@ -62,5 +62,5 @@ pack-deb-linux:
 	@printf "  |ﾙﾘﾘ >   )ﾘ\n"
 	@printf "  ﾉノ㇏ Ｖ ﾉ|ﾉ\n"
 	@printf "        ⠁⠁\n"
-	@printf "\033[1;38;2;254;228;208m[*] Build done,package: deshc-termux.deb\033[0m\n"
+	@printf "\033[1;38;2;254;228;208m[*] Build done,package: deshc-linux.deb\033[0m\n"
 	@rm -rf $(O)
