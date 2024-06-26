@@ -9,7 +9,7 @@ deshc - decrypt SHC and SSC encrypted shell script
       -p          Copy binary to $PATH before decrypting it,
                   Solution for certain devices that chmod
                   doesn't working properly like OnePlus/Realme/Oppo.
-      -t          Specify the amount time on second for waiting
+      -t DECIMAL  Specify the amount time on second for waiting
                   execve call. default 0.03 second for shc
                   and 0.01 for ssc.
 
