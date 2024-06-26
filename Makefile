@@ -28,7 +28,7 @@ pack-deb-termux:
 	@mkdir -v $(O)/deb
 	@mkdir -pv $(O)/deb/data/data/com.termux/files/usr
 	@mkdir -pv $(O)/deb/data/data/com.termux/files/usr/bin
-	@cp -rv src/termux/* $(O)/deb/data/data/com.termux/files/usr/bin/
+	@cp -rv src/* $(O)/deb/data/data/com.termux/files/usr/bin/
 	@cp -rv dpkg-conf $(O)/deb/DEBIAN
 	@printf "\033[1;38;2;254;228;208m[+] Build packages.\033[0m\n"&&sleep 1s
 	@chmod -Rv 755 $(O)/deb/DEBIAN
@@ -49,7 +49,7 @@ pack-deb-linux:
 	@mkdir -v $(O)/deb
 	@mkdir -pv $(O)/deb/usr
 	@mkdir -pv $(O)/deb/usr/bin
-	@cp -rv src/linux/* $(O)/deb/usr/bin/
+	@cp -rv src/* $(O)/deb/usr/bin/
 	@cp -rv dpkg-conf $(O)/deb/DEBIAN
 	@printf "\033[1;38;2;254;228;208m[+] Build packages.\033[0m\n"&&sleep 1s
 	@chmod -Rv 755 $(O)/deb/DEBIAN
