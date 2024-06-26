@@ -56,8 +56,13 @@ if [[ $ENCRYPTION_TYPE == "SHC" ]]; then
 			echo "Decrypting $arg → $filename.dec.sh"
 
 			if [ $COPY_TO_PATH -eq 1 ]; then
-				cp $arg $PATH
-				chmod +x $PATH/$arg
+				if [ -x $PATH/$arg ]; then
+					echo "error: same named binary have been found in $PATH, Aborting to prevent futher damage"
+					exit 1
+				else
+					cp $arg $PATH
+					chmod +x $PATH/$arg
+				fi
 			else
 				chmod +x ./$arg
 			fi
