@@ -69,7 +69,11 @@ for arg in $@; do
 		$arg >/dev/null 2>&1 &
 		child=$!
 		if [ -z $CUSTOM_DELAY_EXECVE ]; then
-			sleep 0.03
+			if [[ $ENCRYPTION_TYPE == "SHC" ]]; then
+				sleep 0.03
+			else
+				sleep 0.015
+			fi
 		else
 			sleep $CUSTOM_DELAY_EXECVE
 		fi
