@@ -49,76 +49,45 @@ if [ -z "$@" ]; then
 	exit 0
 fi
 
-if [[ $ENCRYPTION_TYPE == "SHC" ]]; then
-	for arg in $@; do
-		if [ -f $arg ]; then
-			filename="${arg%.*}"
-			echo "Decrypting $arg → $filename.dec.sh"
+for arg in $@; do
+	if [ -f $arg ]; then
+		filename="${arg%.*}"
+		echo "Decrypting $arg → $filename.dec.sh"
 
-			if [ $COPY_TO_PATH -eq 1 ]; then
-				if [ -x $PATH/$arg ]; then
-					echo "error: same named binary have been found in $PATH, Aborting to prevent futher damage"
-					exit 1
-				else
-					cp $arg $PATH
-					chmod +x $PATH/$arg
-				fi
+		if [ $COPY_TO_PATH -eq 1 ]; then
+			if [ -x $PATH/$arg ]; then
+				echo "error: same named binary have been found in $PATH, aborting to prevent futher damage."
+				exit 1
 			else
-				chmod +x ./$arg
-			fi
-
-			$arg >/dev/null 2>&1 &
-			child=$!
-			if [ -z $CUSTOM_DELAY_EXECVE ]; then
-				sleep 0.03
-			else
-				sleep $CUSTOM_DELAY_EXECVE
-			fi
-			kill -STOP $child
-			cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/; $d' >$filename.dec.sh
-			kill -TERM $child
-
-			if [ $COPY_TO_PATH -eq 1 ]; then
-				rm -f $PATH/$arg
-			fi
-			if [[ $(file $filename.dec.sh) != *script* ]]; then
-				echo "Failed to decrypt $arg"
-				rm $filename.dec.sh
-			fi
-		else
-			echo "file $arg not found."
-		fi
-	done
-elif [[ $ENCRYPTION_TYPE == "SSC" ]]; then
-	for arg in $@; do
-		if [ -f $arg ]; then
-			filename="${arg%.*}"
-			echo "Decrypting $arg → $filename.dec.sh"
-
-			if [ $COPY_TO_PATH -eq 1 ]; then
 				cp $arg $PATH
 				chmod +x $PATH/$arg
-			else
-				chmod +x ./$arg
-			fi
-
-			$arg >/dev/null 2>&1 &
-			child=$!
-			if [ -z $CUSTOM_DELAY_EXECVE ]; then
-				sleep 0.015
-			else
-				sleep $CUSTOM_DELAY_EXECVE
-			fi
-			kill -STOP $child
-			cat /proc/$child/fd/3 >$filename.dec.sh
-			kill -TERM $child
-
-			if [ $COPY_TO_PATH -eq 1 ]; then
-				rm -f $PATH/$arg
 			fi
 		else
-			echo "file $arg not found."
+			chmod +x ./$arg
 		fi
-	done
-	echo -e "\nDecrypting SSC script is a bit trickier than SHC, sometimes the output is kind of truncated. make sure to check the output after decrypting it."
-fi
+
+		$arg >/dev/null 2>&1 &
+		child=$!
+		if [ -z $CUSTOM_DELAY_EXECVE ]; then
+			sleep 0.03
+		else
+			sleep $CUSTOM_DELAY_EXECVE
+		fi
+		kill -STOP $child
+		if [[ $ENCRYPTION_TYPE == "SHC" ]]; then
+			cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/; $d' >$filename.dec.sh
+		else
+			cat /proc/$child/fd/3 >$filename.dec.sh
+		fi
+		kill -TERM $child
+
+		if [ $COPY_TO_PATH -eq 1 ]; then
+			rm -f $PATH/$arg
+		fi
+		if [[ $(file $filename.dec.sh) != *script* ]]; then
+			echo "notice: $filename.dec.sh maybe empty or truncated."
+		fi
+	else
+		echo "file $arg not found."
+	fi
+done
