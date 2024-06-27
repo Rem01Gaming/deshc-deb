@@ -11,13 +11,13 @@ deshc - decrypt SHC and SSC encrypted shell script
                   doesn't working properly like OnePlus/Realme/Oppo.
       -t DECIMAL  Specify the amount time on second for waiting
                   execve call. default 0.03 second for shc
-                  and 0.01 for ssc.
+                  and 0.015 for ssc.
 
     Examples:
       deshc -shc encrypted1 encrypted2
-      deshc -ssc -t 0.009 encrypted1 encrypted2
+      deshc -ssc -t 0.01 encrypted1 encrypted2
       deshc -shc -p encrypted1 encrypted2
-      deshc -ssc -p -t 0.01 encrypted1 encrypted2
+      deshc -ssc -p -t 0.018 encrypted1 encrypted2
 EOF
 }
 
@@ -105,7 +105,7 @@ elif [[ $ENCRYPTION_TYPE == "SSC" ]]; then
 			$arg >/dev/null 2>&1 &
 			child=$!
 			if [ -z $CUSTOM_DELAY_EXECVE ]; then
-				sleep 0.01
+				sleep 0.015
 			else
 				sleep $CUSTOM_DELAY_EXECVE
 			fi
