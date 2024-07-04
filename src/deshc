@@ -54,7 +54,7 @@ for arg in $@; do
 		filename="${arg%.*}"
 		echo "Decrypting $arg → $filename.dec.sh"
 
-		if [ $COPY_TO_PATH -eq 1 ]; then
+		if [ ! -z $COPY_TO_PATH ]; then
 			if [ -x $PATH/$arg ]; then
 				echo "error: same named binary have been found in $PATH, aborting to prevent futher damage."
 				exit 1
@@ -85,7 +85,7 @@ for arg in $@; do
 		fi
 		kill -TERM $child
 
-		if [ $COPY_TO_PATH -eq 1 ]; then
+		if [ ! -z $COPY_TO_PATH ]; then
 			rm -f $PATH/$arg
 		fi
 		if [[ $(file $filename.dec.sh) != *script* ]]; then
