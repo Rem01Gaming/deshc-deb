@@ -2,7 +2,7 @@ Package: deshc
 Architecture: all
 Maintainer: Rem01Gaming
 Installed-Size: 500
-Version: 1.1
+Version: 1.2
 Deppens: file
 Homepage: https://github.com/Rem01Gaming/deshc-deb
 Description: Shell Script Compiller (SHC) and Simple Script Compiler (SSC) Decryptor.
